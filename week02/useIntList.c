@@ -19,5 +19,8 @@ int main(int argc, char *argv[])
 	assert(IntListOK(myOtherList));
 	assert(IntListIsSorted(myOtherList));
 
+	freeIntList(myList);
+	freeIntList(myOtherList);
+
 	return 0;
 }

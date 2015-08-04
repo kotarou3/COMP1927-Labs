@@ -38,7 +38,14 @@ IntList newIntList()
 // free up all space associated with list
 void freeIntList(IntList L)
 {
-	// does nothing ...
+	struct IntListNode *currentNode = L->first;
+	while (currentNode) {
+		struct IntListNode *nextNode = currentNode->next;
+		free(currentNode);
+		currentNode = nextNode;
+	}
+
+	free(L);
 }
 
 // display list as one integer per line on stdout
