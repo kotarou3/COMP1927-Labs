@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "assert.h"
+#include <assert.h>
 #include "IntList.h"
 
 // data structures representing IntList
