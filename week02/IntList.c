@@ -209,5 +209,5 @@ void IntListPrint(FILE *outf, IntList L)
 
 	assert(L != NULL);
 	for (curr = L->first; curr != NULL; curr = curr->next)
-		printf("%d\n", curr->data);
+		fprintf(outf, "%d\n", curr->data);
 }
