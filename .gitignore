@@ -1,0 +1,8 @@
+*
+!Makefile
+!Makefile.inc
+
+!**/
+!**/*.c
+!**/*.h
+!**/Makefile
