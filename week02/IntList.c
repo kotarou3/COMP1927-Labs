@@ -99,8 +99,32 @@ void IntListInsert(IntList L, int v)
 // insert an integer into correct place in a sorted list
 void IntListInsertInOrder(IntList L, int v)
 {
-	// This is INCORRECT
-	IntListInsert(L, v);
+	struct IntListNode *n, *curr, *prev;
+
+	assert(L != NULL);
+	n = newIntListNode(v);
+	L->size++;
+
+	if (L->first == NULL) {
+		// empty list case
+		L->first = L->last = n;
+	} else if (n->data <= L->first->data) {
+		// smallest value case
+		n->next = L->first;
+		L->first = n;
+	} else if (n->data >= L->last->data) {
+		// largest value case
+		L->last->next = n;
+		L->last = n;
+	} else {
+		curr = L->first;
+		while (curr && n->data > curr->data) {
+			prev = curr;
+			curr = curr->next;
+		}
+		n->next = curr;
+		prev->next = n;
+	}
 }
 
 // delete first occurrence of v from a list
