@@ -7,7 +7,7 @@ CFLAGS := $(CFLAGS) -O3
 all: usel randl
 build: timing.txt
 clean:
-	rm -f usel randl *.o
+	rm -f usel randl timing.txt *.o
 
 usel: useIntList.o IntList.o
 	$(CC) -o $@ $+ $(LDFLAGS)
