@@ -12,9 +12,9 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#define HEADER_SIZE    sizeof(struct free_list_header)  
-#define MAGIC_FREE     0xDEADBEEF
-#define MAGIC_ALLOC    0xBEEFDEAD
+#define HEADER_SIZE sizeof(struct free_list_header)  
+#define MAGIC_FREE  0xDEADBEEF
+#define MAGIC_ALLOC 0xBEEFDEAD
 
 typedef unsigned char byte;
 typedef u_int32_t vlink_t;
@@ -22,10 +22,10 @@ typedef u_int32_t vsize_t;
 typedef u_int32_t vaddr_t;
 
 typedef struct free_list_header {
-   u_int32_t magic;  // ought to contain MAGIC_FREE
-   vsize_t size;     // # bytes in this block (including header)
-   vlink_t next;     // memory[] index of next free block
-   vlink_t prev;     // memory[] index of previous free block
+    u_int32_t magic; // ought to contain MAGIC_FREE
+    vsize_t size;    // # bytes in this block (including header)
+    vlink_t next;    // memory[] index of next free block
+    vlink_t prev;    // memory[] index of previous free block
 } free_header_t;
 
 // Global data
@@ -36,7 +36,7 @@ static vsize_t memory_size;   // number of bytes malloc'd in memory[]
 
 
 // Input: size - number of bytes to make available to the allocator
-// Output: none              
+// Output: none                  
 // Precondition: Size is a power of two.
 // Postcondition: `size` bytes are now available to the allocator
 // 
@@ -45,12 +45,12 @@ static vsize_t memory_size;   // number of bytes malloc'd in memory[]
 
 void vlad_init(u_int32_t size)
 {
-   // dummy statements to keep compiler happy
-   memory = NULL;
-   free_list_ptr = (vaddr_t)0;
-   memory_size = 0;
-   // TODO
-   // remove the above when you implement your code
+    // dummy statements to keep compiler happy
+    memory = NULL;
+    free_list_ptr = (vaddr_t)0;
+    memory_size = 0;
+    // TODO
+    // remove the above when you implement your code
 }
 
 
@@ -62,10 +62,10 @@ void vlad_init(u_int32_t size)
 //                      for a newly-allocated region of some size >= 
 //                      n + header size.
 
-void *vlad_malloc(u_int32_t n)
+void *vlad_malloc(u_int32_t size)
 {
-   // TODO
-   return NULL; // temporarily
+    // TODO
+    return NULL; // temporarily
 }
 
 
@@ -78,7 +78,7 @@ void *vlad_malloc(u_int32_t n)
 
 void vlad_free(void *object)
 {
-   // TODO
+    // TODO
 }
 
 
@@ -88,7 +88,7 @@ void vlad_free(void *object)
 
 void vlad_end(void)
 {
-   // TODO
+    // TODO
 }
 
 
@@ -97,12 +97,12 @@ void vlad_end(void)
 
 void vlad_stats(void)
 {
-   // TODO
-   // put whatever code you think will help you
-   // understand Vlad's current state in this function
-   // REMOVE all pfthese statements when your vlad_malloc() is done
-   printf("vlad_stats() won't work until vlad_malloc() works\n");
-   return;
+    // TODO
+    // put whatever code you think will help you
+    // understand Vlad's current state in this function
+    // REMOVE all pfthese statements when your vlad_malloc() is done
+    printf("vlad_stats() won't work until vlad_malloc() works\n");
+    return;
 }
 
 
