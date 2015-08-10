@@ -37,102 +37,102 @@ void showHelp();
 
 int main(int argc, char *argv[])
 {
-	// Variables used throughout main
+    // Variables used throughout main
 
-	DLList lines;      // lines from input file as a DLList
-	FILE *f;         // file handle
-	char fname[MAX]; // file name
-	char cmd[MAX];   // command typed by user
-	int  n;          // line numbers/displacements
-	int  done;       // flag for end-of-edit-session
-	char new[MAX];   // buffer to hold newly inserted line
+    DLList lines;      // lines from input file as a DLList
+    FILE *f;         // file handle
+    char fname[MAX]; // file name
+    char cmd[MAX];   // command typed by user
+    int  n;          // line numbers/displacements
+    int  done;       // flag for end-of-edit-session
+    char new[MAX];   // buffer to hold newly inserted line
 
-	// Check command-line args
+    // Check command-line args
 
-	if (argc < 2) {
-		fprintf(stderr, "Usage: %s FileName\n", argv[0]);
-		return EXIT_FAILURE;
-	}
-	strcpy(fname,argv[1]);
-	if ((f = fopen(fname,"r")) == NULL) {
-		fprintf(stderr, "Can't open file %s\n", argv[1]);
-		return EXIT_FAILURE;
-	}
-	lines = getDLList(f);
-	fclose(f);
+    if (argc < 2) {
+        fprintf(stderr, "Usage: %s FileName\n", argv[0]);
+        return EXIT_FAILURE;
+    }
+    strcpy(fname,argv[1]);
+    if ((f = fopen(fname,"r")) == NULL) {
+        fprintf(stderr, "Can't open file %s\n", argv[1]);
+        return EXIT_FAILURE;
+    }
+    lines = getDLList(f);
+    fclose(f);
 
-	// Main loop
+    // Main loop
 
-	done = 0;
-	while (!done && getCommand(cmd)) {
-		switch (cmd[0]) {
-		case '.':
-			// show current line
-			showCurrLine(lines);
-			break;
-		case '%':
-			// show all lines
-			showDLList(stdout,lines);
-			break;
-		case 'n':
-			// move to next line
-			DLListMove(lines,1);
-			showCurrLine(lines);
-			break;
-		case 'p':
-			// move to previous line
-			DLListMove(lines,-1);
-			showCurrLine(lines);
-			break;
-		case '0': case '1': case '2': case '3': case '4':
-		case '5': case '6': case '7': case '8': case '9':
-			// move to line NN
-			n = 0;  // just in case ...
-			sscanf(cmd,"%d",&n);
-			DLListMoveTo(lines,n);
-			showCurrLine(lines);
-			break;
-		case '+': case '-':
-			// move forward/backward NN lines
-			sscanf(cmd,"%d",&n);
-			DLListMove(lines,n);
-			showCurrLine(lines);
-			break;
-		case 'i':
-			// read new line and insert in front of current
-			fgets(new,MAX,stdin);
-			new[strlen(new)-1] = '\0';
-			DLListBefore(lines,new);
-			break;
-		case 'a':
-			// read new line and insert after current
-			fgets(new,MAX,stdin);
-			new[strlen(new)-1] = '\0';
-			DLListAfter(lines,new);
-			break;
-		case 'd':
-			// delete current line
-			DLListDelete(lines);
-			break;
-		case 'w':
-			// write lines to FileName.new
-			strcat(fname,".new");
-			if ((f = fopen(fname,"w")) == NULL)
-				fprintf(stderr, "Can't write %s\n",fname);
-			else {
-				showDLList(f,lines);
-				fclose(f);
-			}
-			break;
-		case 'q':
-			done = 1;
-			break;
-		}
-	}
-	
-	// Finish up cleanly
+    done = 0;
+    while (!done && getCommand(cmd)) {
+        switch (cmd[0]) {
+        case '.':
+            // show current line
+            showCurrLine(lines);
+            break;
+        case '%':
+            // show all lines
+            showDLList(stdout,lines);
+            break;
+        case 'n':
+            // move to next line
+            DLListMove(lines,1);
+            showCurrLine(lines);
+            break;
+        case 'p':
+            // move to previous line
+            DLListMove(lines,-1);
+            showCurrLine(lines);
+            break;
+        case '0': case '1': case '2': case '3': case '4':
+        case '5': case '6': case '7': case '8': case '9':
+            // move to line NN
+            n = 0;  // just in case ...
+            sscanf(cmd,"%d",&n);
+            DLListMoveTo(lines,n);
+            showCurrLine(lines);
+            break;
+        case '+': case '-':
+            // move forward/backward NN lines
+            sscanf(cmd,"%d",&n);
+            DLListMove(lines,n);
+            showCurrLine(lines);
+            break;
+        case 'i':
+            // read new line and insert in front of current
+            fgets(new,MAX,stdin);
+            new[strlen(new)-1] = '\0';
+            DLListBefore(lines,new);
+            break;
+        case 'a':
+            // read new line and insert after current
+            fgets(new,MAX,stdin);
+            new[strlen(new)-1] = '\0';
+            DLListAfter(lines,new);
+            break;
+        case 'd':
+            // delete current line
+            DLListDelete(lines);
+            break;
+        case 'w':
+            // write lines to FileName.new
+            strcat(fname,".new");
+            if ((f = fopen(fname,"w")) == NULL)
+                fprintf(stderr, "Can't write %s\n",fname);
+            else {
+                showDLList(f,lines);
+                fclose(f);
+            }
+            break;
+        case 'q':
+            done = 1;
+            break;
+        }
+    }
 
-	return EXIT_SUCCESS;
+    // Finish up cleanly
+
+    return EXIT_SUCCESS;
 }
 
 // getCommand(buf)
@@ -141,33 +141,33 @@ int main(int argc, char *argv[])
 // return 1 if got a command, 0 if EOF
 int getCommand(char *buf)
 {
-	printf("> ");
-	return (fgets(buf, MAX, stdin) != NULL);
+    printf("> ");
+    return (fgets(buf, MAX, stdin) != NULL);
 }
 
 // showCurrLine(lines)
 void showCurrLine(DLList lines)
 {
-	printf("%s",DLListCurrent(lines));
-	printf("\n");
+    printf("%s",DLListCurrent(lines));
+    printf("\n");
 }
 
 // giveHelp()
 // show help message
 void showHelp()
 {
-	printf("Editor commands:\n");
-	printf(". = show current line\n");
-	printf("%% = show all lines\n");
-	printf("p = move to previous line and show it\n");
-	printf("n = move to next line and show it\n");
-	printf("NN = move to line number NN\n");
-	printf("+NN = move forward by NN lines and show line\n");
-	printf("-NN = move backward by NN lines and show line\n");
-	printf("i = read new line and insert in front of current\n");
-	printf("a = read new line and insert after current\n");
-	printf("d = delete current line\n");
-	printf("w = write out contents of file to file FileName.new\n");
+    printf("Editor commands:\n");
+    printf(". = show current line\n");
+    printf("%% = show all lines\n");
+    printf("p = move to previous line and show it\n");
+    printf("n = move to next line and show it\n");
+    printf("NN = move to line number NN\n");
+    printf("+NN = move forward by NN lines and show line\n");
+    printf("-NN = move backward by NN lines and show line\n");
+    printf("i = read new line and insert in front of current\n");
+    printf("a = read new line and insert after current\n");
+    printf("d = delete current line\n");
+    printf("w = write out contents of file to file FileName.new\n");
     printf("? = show this help message\n");
-	printf("q = quit from the editor\n");
+    printf("q = quit from the editor\n");
 }
