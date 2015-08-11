@@ -13,6 +13,11 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#ifndef _ISOC11_SOURCE
+    // For memalign()
+    #include <malloc.h>
+#endif
+
 #define HEADER_SIZE    sizeof(struct free_list_header)
 #define SMALLEST_ALLOC (1 << 5) // Double the header size
 #define MAGIC_FREE     0xDEADBEEF
@@ -73,7 +78,11 @@ static inline vlink_t nodeToIndex(free_header_t *node)
 void vlad_init(u_int32_t size)
 {
     size = get_block_size(size);
+#ifdef _ISOC11_SOURCE
     memory = aligned_alloc(size, size);
+#else
+    memory = memalign(size, size);
+#endif
     if (!memory) {
         fprintf(stderr, "vlad_init: insufficient memory");
         abort();

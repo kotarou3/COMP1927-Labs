@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -std=c11 -Wall -Wextra -pedantic
+CFLAGS = -std=c99 -Wall -Wextra -pedantic
 LDFLAGS =
 
 .PHONY: all clean
