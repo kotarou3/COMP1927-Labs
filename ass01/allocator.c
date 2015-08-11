@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#define HEADER_SIZE sizeof(struct free_list_header)  
+#define HEADER_SIZE sizeof(struct free_list_header)
 #define MAGIC_FREE  0xDEADBEEF
 #define MAGIC_ALLOC 0xBEEFDEAD
 
@@ -36,10 +36,10 @@ static vsize_t memory_size;   // number of bytes malloc'd in memory[]
 
 
 // Input: size - number of bytes to make available to the allocator
-// Output: none                  
+// Output: none
 // Precondition: Size is a power of two.
 // Postcondition: `size` bytes are now available to the allocator
-// 
+//
 // (If the allocator is already initialised, this function does nothing,
 //  even if it was initialised with different size)
 
@@ -57,9 +57,9 @@ void vlad_init(u_int32_t size)
 // Input: n - number of bytes requested
 // Output: p - a pointer, or NULL
 // Precondition: n is < size of memory available to the allocator
-// Postcondition: If a region of size n or greater cannot be found, p = NULL 
+// Postcondition: If a region of size n or greater cannot be found, p = NULL
 //                Else, p points to a location immediately after a header block
-//                      for a newly-allocated region of some size >= 
+//                      for a newly-allocated region of some size >=
 //                      n + header size.
 
 void *vlad_malloc(u_int32_t size)
@@ -73,7 +73,7 @@ void *vlad_malloc(u_int32_t size)
 // Output: none
 // Precondition: object points to a location immediately after a header block
 //               within the allocator's memory.
-// Postcondition: The region pointed to by object can be re-allocated by 
+// Postcondition: The region pointed to by object can be re-allocated by
 //                vlad_malloc
 
 void vlad_free(void *object)
@@ -113,19 +113,19 @@ void vlad_stats(void)
 //
 // Fancy allocator stats
 // 2D diagram for your allocator.c ... implementation
-// 
+//
 // Copyright (C) 2014 Alen Bou-Haidar <alencool@gmail.com>
-// 
-// FancyStat is free software: you can redistribute it and/or modify 
+//
+// FancyStat is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 2 of the License, or 
+// the Free Software Foundation, either version 2 of the License, or
 // (at your option) any later version.
-// 
+//
 // FancyStat is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>
 
@@ -134,9 +134,9 @@ void vlad_stats(void)
 
 #define STAT_WIDTH  32
 #define STAT_HEIGHT 16
-#define BG_FREE      "\x1b[48;5;35m" 
+#define BG_FREE      "\x1b[48;5;35m"
 #define BG_ALLOC     "\x1b[48;5;39m"
-#define FG_FREE      "\x1b[38;5;35m" 
+#define FG_FREE      "\x1b[38;5;35m"
 #define FG_ALLOC     "\x1b[38;5;39m"
 #define CL_RESET     "\x1b[0m"
 
@@ -144,7 +144,7 @@ void vlad_stats(void)
 typedef struct point {int x, y;} point;
 
 static point offset_to_point(int offset,  int size, int is_end);
-static void fill_block(char graph[STAT_HEIGHT][STAT_WIDTH][20], 
+static void fill_block(char graph[STAT_HEIGHT][STAT_WIDTH][20],
                         int offset, char * label);
 
 
@@ -180,7 +180,7 @@ void vlad_reveal(void *alpha[26])
     while (offset < memory_size){
         block = (free_header_t *)(memory + offset);
         if (block->magic == MAGIC_FREE) {
-            snprintf(free_sizes[free_count++], 32, 
+            snprintf(free_sizes[free_count++], 32,
                 "%d) %d bytes", i, block->size);
             snprintf(label, 3, "%d", i++);
             fill_block(graph, offset,label);
@@ -194,7 +194,7 @@ void vlad_reveal(void *alpha[26])
         if (alpha[i] != NULL) {
             offset = ((byte *) alpha[i] - (byte *) memory) - HEADER_SIZE;
             block = (free_header_t *)(memory + offset);
-            snprintf(alloc_sizes[alloc_count++], 32, 
+            snprintf(alloc_sizes[alloc_count++], 32,
                 "%c) %d bytes", 'a' + i, block->size);
             snprintf(label, 3, "%c", 'a' + i);
             fill_block(graph, offset,label);
@@ -224,7 +224,7 @@ void vlad_reveal(void *alpha[26])
 }
 
 // Fill block area
-static void fill_block(char graph[STAT_HEIGHT][STAT_WIDTH][20], 
+static void fill_block(char graph[STAT_HEIGHT][STAT_WIDTH][20],
                         int offset, char * label)
 {
     point start, end;
@@ -254,7 +254,7 @@ static void fill_block(char graph[STAT_HEIGHT][STAT_WIDTH][20],
             } else {
                 snprintf(text, 3, "  ");
             }
-            sprintf(graph[y][x], "%s%s"CL_RESET, color, text);            
+            sprintf(graph[y][x], "%s%s"CL_RESET, color, text);
         }
     }
 }
@@ -277,7 +277,7 @@ static point offset_to_point(int offset,  int size, int is_end)
     while (curr) {
         pot[inY] >>= 1;
         if (curr & offset) {
-            crd[inY] += pot[inY]*sign; 
+            crd[inY] += pot[inY]*sign;
         }
         inY = !inY; // flip which axis to look at
         curr >>= 1; // shift to the right to advance
