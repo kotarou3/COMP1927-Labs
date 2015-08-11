@@ -10,7 +10,10 @@
 #ifndef ALLOCATOR_H
 #define ALLOCATOR_H
 
+#include <stdint.h>
 #include <stdlib.h>
+
+typedef uint32_t u_int32_t;
 
 // Input: size - number of bytes to make available to the allocator
 // Output: none

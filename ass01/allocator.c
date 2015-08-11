@@ -8,13 +8,15 @@
 //
 
 #include "allocator.h"
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 
-#define HEADER_SIZE sizeof(struct free_list_header)
-#define MAGIC_FREE  0xDEADBEEF
-#define MAGIC_ALLOC 0xBEEFDEAD
+#define HEADER_SIZE    sizeof(struct free_list_header)
+#define SMALLEST_ALLOC (1 << 5) // Double the header size
+#define MAGIC_FREE     0xDEADBEEF
+#define MAGIC_ALLOC    0xBEEFDEAD
 
 typedef unsigned char byte;
 typedef u_int32_t vlink_t;
@@ -34,6 +36,31 @@ static byte *memory = NULL;   // pointer to start of allocator memory
 static vaddr_t free_list_ptr; // index in memory[] of first block in free list
 static vsize_t memory_size;   // number of bytes malloc'd in memory[]
 
+static inline u_int32_t get_block_size(u_int32_t n)
+{
+    if (n <= SMALLEST_ALLOC)
+        return SMALLEST_ALLOC;
+
+    --n;
+    n |= n >> 1;
+    n |= n >> 2;
+    n |= n >> 4;
+    n |= n >> 8;
+    n |= n >> 16;
+    ++n;
+
+    return n;
+}
+
+static inline free_header_t *indexToNode(vlink_t index)
+{
+    return (free_header_t *)&memory[index];
+}
+
+static inline vlink_t nodeToIndex(free_header_t *node)
+{
+    return (byte *)node - memory;
+}
 
 // Input: size - number of bytes to make available to the allocator
 // Output: none
@@ -45,12 +72,21 @@ static vsize_t memory_size;   // number of bytes malloc'd in memory[]
 
 void vlad_init(u_int32_t size)
 {
-    // dummy statements to keep compiler happy
-    memory = NULL;
-    free_list_ptr = (vaddr_t)0;
-    memory_size = 0;
-    // TODO
-    // remove the above when you implement your code
+    size = get_block_size(size);
+    memory = aligned_alloc(size, size);
+    if (!memory) {
+        fprintf(stderr, "vlad_init: insufficient memory");
+        abort();
+    }
+
+    free_header_t *node = indexToNode(0);
+    node->magic = MAGIC_FREE;
+    node->size = size;
+    node->next = 0;
+    node->prev = 0;
+
+    free_list_ptr = 0;
+    memory_size = size;
 }
 
 
@@ -64,8 +100,57 @@ void vlad_init(u_int32_t size)
 
 void *vlad_malloc(u_int32_t size)
 {
-    // TODO
-    return NULL; // temporarily
+    if (!memory)
+        return NULL;
+
+    size = get_block_size(HEADER_SIZE + size);
+
+    free_header_t *node = indexToNode(free_list_ptr);
+    free_header_t *bestFitNode = NULL;
+    while (true) {
+        if (node->magic != MAGIC_FREE) {
+            fprintf(stderr, "Memory corruption");
+            abort();
+        }
+
+        if (size <= node->size && (!bestFitNode || node->size < bestFitNode->size))
+            bestFitNode = node;
+
+        if (node->next == free_list_ptr)
+            break;
+
+        node = indexToNode(node->next);
+    }
+    node = bestFitNode;
+
+    if (!node || node->size < size)
+        return NULL;
+
+    while (node->size > size) {
+        vsize_t newSize = node->size / 2;
+
+        free_header_t *newNode = (free_header_t *)((byte *)node + newSize);
+        newNode->magic = MAGIC_FREE;
+        newNode->size = newSize;
+        newNode->next = node->next;
+        newNode->prev = nodeToIndex(node);
+        indexToNode(newNode->next)->prev = nodeToIndex(newNode);
+
+        node->size = newSize;
+        node->next = nodeToIndex(newNode);
+    }
+
+    if (indexToNode(node->next) == node)
+        return NULL;
+
+    indexToNode(node->next)->prev = node->prev;
+    indexToNode(node->prev)->next = node->next;
+    if (free_list_ptr == nodeToIndex(node))
+        free_list_ptr = node->next;
+
+    node->magic = MAGIC_ALLOC;
+
+    return (byte *)node + HEADER_SIZE;
 }
 
 
@@ -78,7 +163,92 @@ void *vlad_malloc(u_int32_t size)
 
 void vlad_free(void *object)
 {
-    // TODO
+    free_header_t *node = (free_header_t *)((byte *)object - HEADER_SIZE);
+    if (node->magic != MAGIC_ALLOC) {
+        fprintf(stderr, "Attempt to free non-allocated memory");
+        abort();
+    }
+    if (node->size != get_block_size(node->size)) {
+        fprintf(stderr, "Memory corruption");
+        abort();
+    }
+
+    node->magic = MAGIC_FREE;
+
+    bool gotNextFreeNode = false;
+    while (true) {
+        free_header_t *buddyNode = (free_header_t *)((size_t)node ^ node->size);
+        if (buddyNode->magic == MAGIC_ALLOC || buddyNode->size != node->size) {
+            break;
+        } else if (buddyNode->magic != MAGIC_FREE) {
+            fprintf(stderr, "Memory corruption");
+            abort();
+        }
+
+        if (!gotNextFreeNode) {
+            if (node < buddyNode) {
+                if (indexToNode(buddyNode->next) == buddyNode) {
+                    assert(buddyNode->next == free_list_ptr);
+
+                    node->next = nodeToIndex(node);
+                    node->prev = nodeToIndex(node);
+                    free_list_ptr = nodeToIndex(node);
+                } else {
+                    node->next = buddyNode->next;
+                    node->prev = buddyNode->prev;
+                    indexToNode(node->next)->prev = nodeToIndex(node);
+                    indexToNode(node->prev)->next = nodeToIndex(node);
+                    if (free_list_ptr == nodeToIndex(buddyNode))
+                        free_list_ptr = nodeToIndex(node);
+                }
+            } else {
+                node = buddyNode;
+            }
+        } else {
+            if (node < buddyNode) {
+                assert(indexToNode(node->next) == buddyNode);
+
+                indexToNode(buddyNode->next)->prev = nodeToIndex(node);
+                node->next = buddyNode->next;
+            } else {
+                assert(indexToNode(node->prev) == buddyNode);
+
+                indexToNode(node->next)->prev = nodeToIndex(buddyNode);
+                buddyNode->next = node->next;
+                node = buddyNode;
+            }
+        }
+        node->size *= 2;
+
+        gotNextFreeNode = true;
+    }
+    if (gotNextFreeNode)
+        return;
+
+    free_header_t *prevNode = indexToNode(indexToNode(free_list_ptr)->prev);
+    while (true) {
+        if (prevNode->magic != MAGIC_FREE) {
+            fprintf(stderr, "Memory corruption");
+            abort();
+        }
+
+        if (prevNode < node)
+            break;
+
+        if (nodeToIndex(prevNode) == free_list_ptr) {
+            // Reached the start of the list without finding a lower addressed node, so prepend to it
+            prevNode = indexToNode(prevNode->prev);
+            free_list_ptr = nodeToIndex(node);
+            break;
+        }
+
+        prevNode = indexToNode(prevNode->prev);
+    }
+
+    node->prev = nodeToIndex(prevNode);
+    node->next = prevNode->next;
+    indexToNode(prevNode->next)->prev = nodeToIndex(node);
+    prevNode->next = nodeToIndex(node);
 }
 
 
@@ -88,7 +258,8 @@ void vlad_free(void *object)
 
 void vlad_end(void)
 {
-    // TODO
+    free(memory);
+    memory = NULL;
 }
 
 
@@ -97,12 +268,26 @@ void vlad_end(void)
 
 void vlad_stats(void)
 {
-    // TODO
-    // put whatever code you think will help you
-    // understand Vlad's current state in this function
-    // REMOVE all pfthese statements when your vlad_malloc() is done
-    printf("vlad_stats() won't work until vlad_malloc() works\n");
-    return;
+    free_header_t *node = indexToNode(free_list_ptr);
+    size_t n = 0;
+    while (true) {
+        printf("%zu:\t%p:%u\n", ++n, (void*)node, node->size);
+
+        assert(node->magic == MAGIC_FREE);
+        assert(indexToNode(node->next)->prev == nodeToIndex(node));
+
+        free_header_t *buddyNode = (free_header_t *)((size_t)node ^ node->size);
+        assert(buddyNode->magic != MAGIC_FREE || buddyNode->size != node->size);
+
+        if (node->next == free_list_ptr) {
+            break;
+        } else {
+            assert(indexToNode(node->next) > node);
+            assert((byte *)node + node->size <= (byte *)indexToNode(node->next));
+        }
+
+        node = indexToNode(node->next);
+    }
 }
 
 
@@ -161,11 +346,6 @@ void vlad_reveal(void *alpha[26])
     char label[3]; // letters for used memory, numbers for free memory
     int free_count, alloc_count, max_count;
     free_header_t * block;
-
-	// TODO
-	// REMOVE these statements when your vlad_malloc() is done
-    printf("vlad_reveal() won't work until vlad_malloc() works\n");
-    return;
 
     // initilise size lists
     for (i=0; i<26; i++) {

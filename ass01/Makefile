@@ -1,6 +1,6 @@
 include ../Makefile.inc
 
-#CFLAGS := $(CFLAGS) -O3
+CFLAGS := $(CFLAGS) -O3
 
 all: vlad
 clean:
