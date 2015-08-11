@@ -284,6 +284,7 @@ void vlad_stats(void)
 
         assert(node->magic == MAGIC_FREE);
         assert(indexToNode(node->next)->prev == nodeToIndex(node));
+        assert(((size_t)node & ~(node->size - 1)) == (size_t)node);
 
         free_header_t *buddyNode = (free_header_t *)((size_t)node ^ node->size);
         assert(buddyNode->magic != MAGIC_FREE || buddyNode->size != node->size);
