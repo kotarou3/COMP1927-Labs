@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 {
     DLList myList;
     myList = getDLList(stdin);
-    showDLList(stdout,myList);
+    showDLList(stdout, myList);
     assert(validDLList(myList));
     return 0;
 }

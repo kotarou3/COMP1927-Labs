@@ -84,18 +84,17 @@ DLList getDLList(FILE *in)
     char line[1000];
 
     L = newDLList();
-    while (fgets(line,1000,in) != NULL) {
+    while (fgets(line, 1000, in) != NULL) {
         char *value = strdup(trim(line));
         new = newDLListNode(value);
         if (L->last == NULL) {
             L->first = L->last = new;
-        }
-        else {
+        } else {
             L->last->next = new;
             new->prev = L->last;
             L->last = new;
         }
-        L->nitems++;
+        ++L->nitems;
     }
     L->curr = L->first;
     return L;
@@ -107,27 +106,27 @@ void showDLList(FILE *out, DLList L)
     assert(out != NULL); assert(L != NULL);
     DLListNode *curr;
     for (curr = L->first; curr != NULL; curr = curr->next)
-        fprintf(out,"%s\n",curr->value);
+        fprintf(out, "%s\n", curr->value);
 }
 
 // check sanity of a DLList (for testing)
 int validDLList(DLList L)
 {
     if (L == NULL) {
-        fprintf(stderr,"DLList is null\n");
+        fprintf(stderr, "DLList is null\n");
         return 0;
     }
     if (L->first == NULL) {
         // list is empty; curr and last should be null
         if (L->last != NULL || L->curr != NULL) {
-            fprintf(stderr,"Non-null pointers in empty list\n");
+            fprintf(stderr, "Non-null pointers in empty list\n");
             return 0;
         }
     }
     else {
         // list is not empty; curr and last should be non-null
         if (L->last == NULL || L->curr == NULL) {
-            fprintf(stderr,"Null pointers in non-empty list\n");
+            fprintf(stderr, "Null pointers in non-empty list\n");
             return 0;
         }
     }
@@ -137,11 +136,11 @@ int validDLList(DLList L)
     count = 0;
     for (curr = L->first; curr != NULL; curr = curr->next) {
         if (curr->prev != NULL && curr->prev->next != curr) {
-            fprintf(stderr, "Invalid forward link into node (%s)\n",curr->value);
+            fprintf(stderr, "Invalid forward link into node (%s)\n", curr->value);
             return 0;
         }
         if (curr->next != NULL && curr->next->prev != curr) {
-            fprintf(stderr, "Invalid backward link into node (%s)\n",curr->value);
+            fprintf(stderr, "Invalid backward link into node (%s)\n", curr->value);
             return 0;
         }
         count++;
@@ -185,8 +184,7 @@ int DLListMove(DLList L, int n)
             L->curr = L->curr->next;
             n--;
         }
-    }
-    else if (n < 0) {
+    } else if (n < 0) {
         while (n < 0 && L->curr->prev != NULL) {
             L->curr = L->curr->prev;
             n++;
