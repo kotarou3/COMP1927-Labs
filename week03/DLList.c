@@ -167,7 +167,9 @@ int validDLList(DLList L)
 // return item at current position
 char *DLListCurrent(DLList L)
 {
-    assert(L != NULL); assert(L->curr != NULL);
+    assert(L != NULL);
+    if (L->curr == NULL)
+        return NULL;
     return L->curr->value;
 }
 
@@ -207,7 +209,27 @@ int DLListMoveTo(DLList L, int i)
 void DLListBefore(DLList L, char *it)
 {
     assert(L != NULL);
-    // COMPLETE THIS FUNCTION
+    DLListNode *new = newDLListNode(it);
+    if (L->curr == NULL){
+        L->curr = L->first = L->last = new;
+        new->next = NULL;
+        new->prev = NULL;
+    } else if (L->curr == L->first) {
+        new->next = L->curr;
+        new->prev = NULL;
+
+        L->curr->prev = new;
+        L->curr = new;
+        L->first = new;
+    } else {
+        new->next = L->curr;
+        new->prev = L->curr->prev;
+
+        L->curr->prev->next = new;
+        L->curr->prev = new;
+        L->curr = new;
+    }
+    ++L->nitems;
 }
 
 // insert an item after current item
@@ -215,7 +237,27 @@ void DLListBefore(DLList L, char *it)
 void DLListAfter(DLList L, char *it)
 {
     assert(L != NULL);
-    // COMPLETE THIS FUNCTION
+    DLListNode *new = newDLListNode(it);
+    if (L->curr == NULL) {
+        L->curr = L->first = L->last = new;
+        new->next = NULL;
+        new->prev = NULL;
+    } else if (L->curr == L->last) {
+        new->next = NULL;
+        new->prev = L->curr;
+
+        L->curr->next = new;
+        L->curr = new;
+        L->last = new;
+    } else {
+        new->next = L->curr->next;
+        new->prev = L->curr;
+
+        L->curr->next->prev = new;
+        L->curr->next = new;
+        L->curr = new;
+    }
+    ++L->nitems;
 }
 
 // delete current item
@@ -225,7 +267,31 @@ void DLListAfter(DLList L, char *it)
 void DLListDelete(DLList L)
 {
     assert (L != NULL);
-    // COMPLETE THIS FUNCTION
+    if (L->curr == NULL){
+        return;
+    } else if (L->first == L->last) {
+        free(L->curr);
+        L->curr = NULL;
+        L->first = NULL;
+        L->last = NULL;
+    } else if (L->curr == L->last) {
+        L->curr->prev->next = NULL;
+        L->last = L->curr->prev;
+        free(L->curr);
+        L->curr = L->last;
+    } else if (L->curr == L->first) {
+        L->curr->next->prev = NULL;
+        L->first = L->curr->next;
+        free(L->curr);
+        L->curr = L->first;
+    } else {
+        L->curr->prev->next = L->curr->next;
+        L->curr->next->prev = L->curr->prev;
+        DLListNode *newCurrent = L->curr->next;
+        free(L->curr);
+        L->curr = newCurrent;
+    }
+    --L->nitems;
 }
 
 // return number of elements in a list

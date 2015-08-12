@@ -1,5 +1,7 @@
 include ../Makefile.inc
 
+CFLAGS:= $(CFLAGS) -O3
+
 all: testL myed
 clean:
 	rm -f testL myed *.o
