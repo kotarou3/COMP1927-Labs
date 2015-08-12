@@ -59,6 +59,7 @@ void freeDLList(DLList L)
     while (curr != NULL) {
         prev = curr;
         curr = curr->next;
+        free(prev->value);
         free(prev);
     }
     free(L);
@@ -85,8 +86,7 @@ DLList getDLList(FILE *in)
 
     L = newDLList();
     while (fgets(line, 1000, in) != NULL) {
-        char *value = strdup(trim(line));
-        new = newDLListNode(value);
+        new = newDLListNode(trim(line));
         if (L->last == NULL) {
             L->first = L->last = new;
         } else {
@@ -270,6 +270,7 @@ void DLListDelete(DLList L)
     if (L->curr == NULL){
         return;
     } else if (L->first == L->last) {
+        free(L->curr->value);
         free(L->curr);
         L->curr = NULL;
         L->first = NULL;
@@ -277,17 +278,20 @@ void DLListDelete(DLList L)
     } else if (L->curr == L->last) {
         L->curr->prev->next = NULL;
         L->last = L->curr->prev;
+        free(L->curr->value);
         free(L->curr);
         L->curr = L->last;
     } else if (L->curr == L->first) {
         L->curr->next->prev = NULL;
         L->first = L->curr->next;
+        free(L->curr->value);
         free(L->curr);
         L->curr = L->first;
     } else {
         L->curr->prev->next = L->curr->next;
         L->curr->next->prev = L->curr->prev;
         DLListNode *newCurrent = L->curr->next;
+        free(L->curr->value);
         free(L->curr);
         L->curr = newCurrent;
     }

@@ -131,6 +131,7 @@ int main(int argc, char *argv[])
     }
 
     // Finish up cleanly
+    freeDLList(lines);
 
     return EXIT_SUCCESS;
 }
