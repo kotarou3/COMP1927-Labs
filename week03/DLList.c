@@ -59,6 +59,7 @@ void freeDLList(DLList L)
     while (curr != NULL) {
         prev = curr;
         curr = curr->next;
+        free(prev->value);
         free(prev);
     }
     free(L);
@@ -84,18 +85,16 @@ DLList getDLList(FILE *in)
     char line[1000];
 
     L = newDLList();
-    while (fgets(line,1000,in) != NULL) {
-        char *value = strdup(trim(line));
-        new = newDLListNode(value);
+    while (fgets(line, 1000, in) != NULL) {
+        new = newDLListNode(trim(line));
         if (L->last == NULL) {
             L->first = L->last = new;
-        }
-        else {
+        } else {
             L->last->next = new;
             new->prev = L->last;
             L->last = new;
         }
-        L->nitems++;
+        ++L->nitems;
     }
     L->curr = L->first;
     return L;
@@ -107,27 +106,27 @@ void showDLList(FILE *out, DLList L)
     assert(out != NULL); assert(L != NULL);
     DLListNode *curr;
     for (curr = L->first; curr != NULL; curr = curr->next)
-        fprintf(out,"%s\n",curr->value);
+        fprintf(out, "%s\n", curr->value);
 }
 
 // check sanity of a DLList (for testing)
 int validDLList(DLList L)
 {
     if (L == NULL) {
-        fprintf(stderr,"DLList is null\n");
+        fprintf(stderr, "DLList is null\n");
         return 0;
     }
     if (L->first == NULL) {
         // list is empty; curr and last should be null
         if (L->last != NULL || L->curr != NULL) {
-            fprintf(stderr,"Non-null pointers in empty list\n");
+            fprintf(stderr, "Non-null pointers in empty list\n");
             return 0;
         }
     }
     else {
         // list is not empty; curr and last should be non-null
         if (L->last == NULL || L->curr == NULL) {
-            fprintf(stderr,"Null pointers in non-empty list\n");
+            fprintf(stderr, "Null pointers in non-empty list\n");
             return 0;
         }
     }
@@ -137,11 +136,11 @@ int validDLList(DLList L)
     count = 0;
     for (curr = L->first; curr != NULL; curr = curr->next) {
         if (curr->prev != NULL && curr->prev->next != curr) {
-            fprintf(stderr, "Invalid forward link into node (%s)\n",curr->value);
+            fprintf(stderr, "Invalid forward link into node (%s)\n", curr->value);
             return 0;
         }
         if (curr->next != NULL && curr->next->prev != curr) {
-            fprintf(stderr, "Invalid backward link into node (%s)\n",curr->value);
+            fprintf(stderr, "Invalid backward link into node (%s)\n", curr->value);
             return 0;
         }
         count++;
@@ -168,7 +167,9 @@ int validDLList(DLList L)
 // return item at current position
 char *DLListCurrent(DLList L)
 {
-    assert(L != NULL); assert(L->curr != NULL);
+    assert(L != NULL);
+    if (L->curr == NULL)
+        return NULL;
     return L->curr->value;
 }
 
@@ -185,8 +186,7 @@ int DLListMove(DLList L, int n)
             L->curr = L->curr->next;
             n--;
         }
-    }
-    else if (n < 0) {
+    } else if (n < 0) {
         while (n < 0 && L->curr->prev != NULL) {
             L->curr = L->curr->prev;
             n++;
@@ -209,7 +209,27 @@ int DLListMoveTo(DLList L, int i)
 void DLListBefore(DLList L, char *it)
 {
     assert(L != NULL);
-    // COMPLETE THIS FUNCTION
+    DLListNode *new = newDLListNode(it);
+    if (L->curr == NULL){
+        L->curr = L->first = L->last = new;
+        new->next = NULL;
+        new->prev = NULL;
+    } else if (L->curr == L->first) {
+        new->next = L->curr;
+        new->prev = NULL;
+
+        L->curr->prev = new;
+        L->curr = new;
+        L->first = new;
+    } else {
+        new->next = L->curr;
+        new->prev = L->curr->prev;
+
+        L->curr->prev->next = new;
+        L->curr->prev = new;
+        L->curr = new;
+    }
+    ++L->nitems;
 }
 
 // insert an item after current item
@@ -217,7 +237,27 @@ void DLListBefore(DLList L, char *it)
 void DLListAfter(DLList L, char *it)
 {
     assert(L != NULL);
-    // COMPLETE THIS FUNCTION
+    DLListNode *new = newDLListNode(it);
+    if (L->curr == NULL) {
+        L->curr = L->first = L->last = new;
+        new->next = NULL;
+        new->prev = NULL;
+    } else if (L->curr == L->last) {
+        new->next = NULL;
+        new->prev = L->curr;
+
+        L->curr->next = new;
+        L->curr = new;
+        L->last = new;
+    } else {
+        new->next = L->curr->next;
+        new->prev = L->curr;
+
+        L->curr->next->prev = new;
+        L->curr->next = new;
+        L->curr = new;
+    }
+    ++L->nitems;
 }
 
 // delete current item
@@ -227,7 +267,35 @@ void DLListAfter(DLList L, char *it)
 void DLListDelete(DLList L)
 {
     assert (L != NULL);
-    // COMPLETE THIS FUNCTION
+    if (L->curr == NULL){
+        return;
+    } else if (L->first == L->last) {
+        free(L->curr->value);
+        free(L->curr);
+        L->curr = NULL;
+        L->first = NULL;
+        L->last = NULL;
+    } else if (L->curr == L->last) {
+        L->curr->prev->next = NULL;
+        L->last = L->curr->prev;
+        free(L->curr->value);
+        free(L->curr);
+        L->curr = L->last;
+    } else if (L->curr == L->first) {
+        L->curr->next->prev = NULL;
+        L->first = L->curr->next;
+        free(L->curr->value);
+        free(L->curr);
+        L->curr = L->first;
+    } else {
+        L->curr->prev->next = L->curr->next;
+        L->curr->next->prev = L->curr->prev;
+        DLListNode *newCurrent = L->curr->next;
+        free(L->curr->value);
+        free(L->curr);
+        L->curr = newCurrent;
+    }
+    --L->nitems;
 }
 
 // return number of elements in a list
