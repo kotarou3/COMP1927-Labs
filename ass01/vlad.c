@@ -116,5 +116,8 @@ int main(int argc, char *argv[])
       }
       if (isatty(0) && !quiet) printf("> ");
    }
+
+   vlad_end();
+
    return EXIT_SUCCESS;
 }
