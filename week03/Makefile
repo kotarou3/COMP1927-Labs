@@ -1,6 +1,6 @@
 include ../Makefile.inc
 
-CFLAGS:= $(CFLAGS) -O3
+CFLAGS:= $(CFLAGS) -D_GNU_SOURCE -O3
 
 all: testL myed
 clean:
