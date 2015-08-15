@@ -231,33 +231,33 @@ void vlad_free(void *object)
 
         gotNextFreeNode = true;
     }
-    if (gotNextFreeNode)
-        return;
 
-    free_header_t *prevNode = indexToNode(indexToNode(free_list_ptr)->prev);
-    while (true) {
-        if (prevNode->magic != MAGIC_FREE) {
-            fprintf(stderr, "Memory corruption");
-            abort();
-        }
+    if (!gotNextFreeNode) {
+        free_header_t *prevNode = indexToNode(indexToNode(free_list_ptr)->prev);
+        while (true) {
+            if (prevNode->magic != MAGIC_FREE) {
+                fprintf(stderr, "Memory corruption");
+                abort();
+            }
 
-        if (prevNode < node)
-            break;
+            if (prevNode < node)
+                break;
 
-        if (nodeToIndex(prevNode) == free_list_ptr) {
-            // Reached the start of the list without finding a lower addressed node, so prepend to it
+            if (nodeToIndex(prevNode) == free_list_ptr) {
+                // Reached the start of the list without finding a lower addressed node, so prepend to it
+                prevNode = indexToNode(prevNode->prev);
+                free_list_ptr = nodeToIndex(node);
+                break;
+            }
+
             prevNode = indexToNode(prevNode->prev);
-            free_list_ptr = nodeToIndex(node);
-            break;
         }
 
-        prevNode = indexToNode(prevNode->prev);
+        node->prev = nodeToIndex(prevNode);
+        node->next = prevNode->next;
+        indexToNode(prevNode->next)->prev = nodeToIndex(node);
+        prevNode->next = nodeToIndex(node);
     }
-
-    node->prev = nodeToIndex(prevNode);
-    node->next = prevNode->next;
-    indexToNode(prevNode->next)->prev = nodeToIndex(node);
-    prevNode->next = nodeToIndex(node);
 }
 
 
