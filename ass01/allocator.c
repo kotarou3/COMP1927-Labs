@@ -19,7 +19,8 @@
 #endif
 
 #define HEADER_SIZE    sizeof(struct free_list_header)
-#define SMALLEST_ALLOC (1 << 5) // Double the header size
+#define MIN_ALLOC (1 << 5) // Double the header size
+#define MIN_INIT_ALLOC (1 << 9)
 #define MAGIC_FREE     0xDEADBEEF
 #define MAGIC_ALLOC    0xBEEFDEAD
 
@@ -43,8 +44,8 @@ static vsize_t memory_size;   // number of bytes malloc'd in memory[]
 
 static inline u_int32_t get_block_size(u_int32_t n)
 {
-    if (n <= SMALLEST_ALLOC)
-        return SMALLEST_ALLOC;
+    if (n <= MIN_ALLOC)
+        return MIN_ALLOC;
 
     --n;
     n |= n >> 1;
@@ -77,7 +78,7 @@ static inline vlink_t nodeToIndex(free_header_t *node)
 
 void vlad_init(u_int32_t size)
 {
-    size = get_block_size(size);
+    size = size < MIN_INIT_ALLOC ? MIN_INIT_ALLOC : get_block_size(size);
 #ifdef _ISOC11_SOURCE
     memory = aligned_alloc(size, size);
 #else
