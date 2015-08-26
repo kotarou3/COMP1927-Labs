@@ -11,7 +11,7 @@ int main (int argc, char *argv[])
 {
    FILE *in;
 
-   if (argc == 1) 
+   if (argc == 1)
       in = stdin;
    else {
       if ((in = fopen(argv[1],"r")) == NULL) {
@@ -19,10 +19,10 @@ int main (int argc, char *argv[])
          exit(1);
       }
    }
-  
+
    // Put code here read numbers and "unsort" them
    // Hint: for reading the input
    //   while (fscanf(in, "%d", &val) != EOF)
 
    return 0;
-}      
+}

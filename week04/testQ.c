@@ -13,7 +13,7 @@ int main (int argc, char *argv[])
    int i;
    Item it;
    Queue q1,q2;
-   
+
    printf("Test 1: Create queues\n");
    q1 = createQueue();
    q2 = createQueue();
@@ -47,14 +47,14 @@ int main (int argc, char *argv[])
 
    printf("Test 4: Destroy queues\n");
    dropQueue(q1);
-   dropQueue(q2);  
+   dropQueue(q2);
    printf("Passed\n");
- 
+
    printf("Test 5: Remove from emoty queue\n");
    printf("This test should fail an assertion\n");
    q1 = createQueue();
    it = leaveQueue(q1);
    printf("Passed\n");
-  
+
    return 0;
-}      
+}

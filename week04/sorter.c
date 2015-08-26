@@ -25,7 +25,7 @@ int main(void)
 		show("Sorting", a, N);
 		sort(a, N);
 		show("Sorted ", a, N);
-	}	
+	}
 	return 0;
 }
 
