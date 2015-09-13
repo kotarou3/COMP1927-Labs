@@ -140,8 +140,22 @@ int numE(Map g, TransportID type)
 int connections(Map g, LocationID start, LocationID end, TransportID type[])
 {
    assert(g != NULL);
-   // TODO: complete this fucntion
-   return 0;  // to keep the compiler happy
+
+   int results = 0;
+   for (VList node = g->connections[start]; node; node = node->next) {
+      if (node->v == end) {
+         type[results++] = node->type;
+      } else if (isSea(node->v)) {
+         for (VList seaNode = g->connections[node->v]; seaNode; seaNode = seaNode->next) {
+            if (seaNode->v == end) {
+               type[results++] = BOAT;
+               break;
+            }
+         }
+      }
+   }
+
+   return results;
 }
 
 // Add edges to Graph representing map of Europe
