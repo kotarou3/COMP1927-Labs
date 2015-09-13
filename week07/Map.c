@@ -50,12 +50,12 @@ void disposeMap(Map g)
    assert(g->connections != NULL);
 
    for (i = 0; i < g->nV; i++){
-       curr = g->connections[i];
-       while(curr != NULL){
-          next = curr->next;
-          free(curr);
-          curr=next;
-       }
+      curr = g->connections[i];
+      while(curr != NULL){
+         next = curr->next;
+         free(curr);
+         curr = next;
+      }
    }
    free(g);
 }
@@ -82,10 +82,10 @@ static int inVList(VList L, LocationID v, TransportID type)
 void addLink(Map g, LocationID start, LocationID end, TransportID type)
 {
 	assert(g != NULL);
-	if (!inVList(g->connections[start],end,type)) {
-   	   g->connections[start] = insertVList(g->connections[start],end,type);
-   	   g->connections[end] = insertVList(g->connections[end],start,type);
-   	   g->nE++;
+	if (!inVList(g->connections[start], end, type)) {
+      g->connections[start] = insertVList(g->connections[start], end, type);
+      g->connections[end] = insertVList(g->connections[end], start, type);
+      g->nE++;
 	}
 }
 
@@ -98,7 +98,7 @@ void showMap(Map g)
    for (i = 0; i < g->nV; i++) {
       VList n = g->connections[i];
       while (n != NULL) {
-         printf("%s connects to %s ",idToName(i),idToName(n->v));
+         printf("%s connects to %s ", idToName(i), idToName(n->v));
          switch (n->type) {
          case ROAD: printf("by road\n"); break;
          case RAIL: printf("by rail\n"); break;
@@ -129,8 +129,8 @@ int numE(Map g, TransportID type)
          if (n->type == type || type == ANY) nE++;
          n = n->next;
       }
-    }
-    return nE;
+   }
+   return nE;
 }
 
 
