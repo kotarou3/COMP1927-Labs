@@ -50,5 +50,6 @@ int main(int argc, char **argv)
 			}
 		}
 	}
+	disposeMap(europe);
 	return 0;
 }

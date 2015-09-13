@@ -12,5 +12,6 @@ int main(int argc, char **argv)
 	europe = newMap();
 	printf("Map of Europe\n=============\n");
 	showMap(europe);
+	disposeMap(europe);
 	return 0;
 }
