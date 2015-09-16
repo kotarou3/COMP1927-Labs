@@ -4,7 +4,7 @@ include ../Makefile.inc
 
 all: pl euro conn test
 clean:
-	rm -f testL myed *.o
+	rm -f pl euro conn *.o
 
 test: conn conn-tester.js
 	./conn-tester.js
