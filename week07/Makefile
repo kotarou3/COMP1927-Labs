@@ -1,8 +1,13 @@
 include ../Makefile.inc
 
-all: pl euro conn
+.PHONY: test
+
+all: pl euro conn test
 clean:
 	rm -f testL myed *.o
+
+test: conn conn-tester.js
+	./conn-tester.js
 
 pl: pl.o Places.o
 	$(CC) -o $@ $+ $(LDFLAGS)
