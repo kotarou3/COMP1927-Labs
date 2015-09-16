@@ -1,6 +1,7 @@
 // graph.c ... Graph of strings (adjacency matrix)
 // Written by John Shepherd, September 2015
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
@@ -120,28 +121,58 @@ int nVertices(Graph g)
 void showGraph(Graph g, int mode)
 {
 	assert(g != NULL);
-	if (g->nV == 0)
-		printf("Graph is empty\n");
-	else {
-		printf("Graph has %d vertices:\n",g->nV);
-		int i, j;
-		if (mode == 1) {
-			for (i = 0; i < g->nV; i++) {
-				for (j = 0; j < g->nV; j++)
-					printf("%d",g->edges[i][j]);
-				putchar('\n');
-			}
-		}
+	if (mode != 2) {
+		if (g->nV == 0)
+			printf("Graph is empty\n");
 		else {
-			for (i = 0; i < g->nV; i++) {
-				printf("Vertex: %s\n", g->vertex[i]);
-				printf("connects to\n");
-				for (j = 0; j < g->nV; j++) {
-					if (g->edges[i][j])
-						printf("   %s\n",g->vertex[j]);
+			printf("Graph has %d vertices:\n",g->nV);
+			int i, j;
+			if (mode == 1) {
+				for (i = 0; i < g->nV; i++) {
+					for (j = 0; j < g->nV; j++)
+						printf("%d",g->edges[i][j]);
+					putchar('\n');
+				}
+			}
+			else {
+				for (i = 0; i < g->nV; i++) {
+					printf("Vertex: %s\n", g->vertex[i]);
+					printf("connects to\n");
+					for (j = 0; j < g->nV; j++) {
+						if (g->edges[i][j])
+							printf("   %s\n",g->vertex[j]);
+					}
 				}
 			}
 		}
+	}
+	else {
+		puts("{");
+
+		puts("  \"nodes\": [");
+		for (int v = 0; v < g->nV; v++) {
+			if (v != 0)
+				puts(",");
+			printf("    {\"id\": \"n%d\", \"label\": \"%s\"}", v, g->vertex[v]);
+		}
+		puts("");
+		puts("  ],");
+
+		puts("  \"edges\": [");
+		size_t e = 0;
+		for (int x = 0; x < g->nV; x++) {
+			for (int y = 0; y < g->nV; y++) {
+				if (g->edges[x][y]) {
+					if (e != 0)
+						puts(",");
+					printf("    {\"id\": \"e%zu\", \"source\": \"n%d\", \"target\": \"n%d\"}", e++, x, y);
+				}
+			}
+		}
+		puts("");
+		puts("  ]");
+
+		puts("}");
 	}
 }
 
