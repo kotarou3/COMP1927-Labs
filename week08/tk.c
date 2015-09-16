@@ -29,6 +29,7 @@ int main(int argc, char **argv)
 		}
 		showStack(s);
 	}
+	disposeStack(s);
 	return 0;
 }
 

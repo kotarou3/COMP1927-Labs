@@ -28,6 +28,8 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
+	curl_global_init(CURL_GLOBAL_DEFAULT);
+
 	handle = url_fopen(BASE, "r");
 	if (!handle) {
 		fprintf(stderr,"couldn't url_fopen() %s\n", BASE);
@@ -48,6 +50,9 @@ int main(int argc, char **argv)
 	}
 
 	url_fclose(handle);
+
+	curl_global_cleanup();
+
 	return 0;
 }
 

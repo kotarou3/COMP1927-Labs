@@ -39,6 +39,8 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
+	curl_global_init(CURL_GLOBAL_DEFAULT);
+
 	// You need to modify the code below to implement:
 	//
 	// add firstURL to the ToDo list
@@ -78,7 +80,9 @@ int main(int argc, char **argv)
 		}
 	}
 	url_fclose(handle);
-	sleep(1);
+
+	curl_global_cleanup();
+
 	return 0;
 }
 

@@ -18,6 +18,7 @@ int main(int argc, char **argv)
 		printf("Insert %s\n",x);
 		showSet(s);
 	}
+	disposeSet(s);
 	return 0;
 }
 

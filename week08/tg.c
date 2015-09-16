@@ -23,6 +23,7 @@ int main(int argc, char **argv)
 		printf("Added %s -> %s\n", x[a], x[b]);
 		showGraph(g,0);
 	}
+	disposeGraph(g);
 	return 0;
 }
 

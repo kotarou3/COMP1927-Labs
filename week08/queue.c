@@ -51,9 +51,10 @@ void disposeQueue(Queue q)
 	Link next, curr = q->front;
 	while (curr != NULL) {
 		next = curr->next;
-		disposeNode(curr);	
+		disposeNode(curr);
 		curr = next;
 	}
+	free(q);
 }
 
 // enterQueue(Queue,Str)

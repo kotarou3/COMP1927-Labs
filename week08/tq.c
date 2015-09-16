@@ -30,6 +30,7 @@ int main(int argc, char **argv)
 		}
 		showQueue(q);
 	}
+	disposeQueue(q);
 	return 0;
 }
 

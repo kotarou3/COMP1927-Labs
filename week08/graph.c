@@ -65,7 +65,9 @@ void disposeGraph(Graph g)
 	for (i = 0; i < g->maxV; i++) {
 		free(g->edges[i]);
 	}
+	free(g->vertex);
 	free(g->edges);
+	free(g);
 }
 
 // addEdge(Graph,Src,Dest)
