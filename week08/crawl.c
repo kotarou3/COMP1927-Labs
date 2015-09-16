@@ -29,13 +29,13 @@ int main(int argc, char **argv)
 	int  maxURLs;
 
 	if (argc > 2) {
-		strcpy(baseURL,argv[1]);
-		setFirstURL(baseURL,firstURL);
+		strcpy(baseURL, argv[1]);
+		setFirstURL(baseURL, firstURL);
 		maxURLs = atoi(argv[2]);
 		if (maxURLs < 40) maxURLs = 40;
 	}
 	else {
-		fprintf(stderr, "Usage: %s BaseURL MaxURLs\n",argv[0]);
+		fprintf(stderr, "Usage: %s BaseURL MaxURLs\n", argv[0]);
 		exit(1);
 	}
 
@@ -63,19 +63,19 @@ int main(int argc, char **argv)
 	//    sleep(1)
 	// }
 	if (!(handle = url_fopen(firstURL, "r"))) {
-		fprintf(stderr,"Couldn't open %s\n", next);
+		fprintf(stderr, "Couldn't open %s\n", next);
 		exit(1);
 	}
 	while(!url_feof(handle)) {
-		url_fgets(buffer,sizeof(buffer),handle);
-		//fputs(buffer,stdout);
+		url_fgets(buffer, sizeof(buffer), handle);
+		//fputs(buffer, stdout);
 		strlower(buffer);
 		char *cur, link[BUFSIZE], full_link[BUFSIZE];
 		cur = buffer;
 		while ((cur = nextURL(cur)) != NULL) {
-			getURL(cur, link, BUFSIZE-1);
-			normalise(link, next, baseURL, full_link, BUFSIZE-1);
-			printf("Found %s\n",full_link);
+			getURL(cur, link, BUFSIZE - 1);
+			normalise(link, next, baseURL, full_link, BUFSIZE - 1);
+			printf("Found %s\n", full_link);
 			cur += strlen(link);
 		}
 	}
@@ -86,7 +86,7 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-// normalise(In,From,Base,Out,N)
+// normalise(In, From, Base, Out, N)
 // - converts the URL in In into a regularised version in Out
 // - uses the base URL to handle URLs like "/..."
 // - uses From (the URL used to reach In) to handle "../"
@@ -106,24 +106,24 @@ void normalise(char *in, char *from, char *base, char *out, int n)
 	}
 }
 
-// setFirstURL(Base,First)
+// setFirstURL(Base, First)
 // - sets a "normalised" version of Base as First
 // - modifies Base to a "normalised" version of itself
 void setFirstURL(char *base, char *first)
 {
 	char *c;
 	if ((c = strstr(base, "/index.html")) != NULL) {
-		strcpy(first,base);
+		strcpy(first, base);
 		*c = '\0';
 	}
-	else if (base[strlen(base)-1] == '/') {
-		strcpy(first,base);
-		strcat(first,"index.html");
+	else if (base[strlen(base) - 1] == '/') {
+		strcpy(first, base);
+		strcat(first, "index.html");
 		base[strlen(base)-1] = '\0';
 	}
 	else {
-		strcpy(first,base);
-		strcat(first,"/index.html");
+		strcpy(first, base);
+		strcat(first, "/index.html");
 	}
 }
 
@@ -131,6 +131,6 @@ void setFirstURL(char *base, char *first)
 // - set all chars in Str to lower-case
 void strlower(char *s)
 {
-	for ( ; *s != '\0'; s++)
+	for (; *s != '\0'; s++)
 		*s = tolower(*s);
 }
