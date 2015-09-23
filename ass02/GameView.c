@@ -1,11 +1,12 @@
 // GameView.c ... GameView ADT implementation
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <assert.h>
 #include "Globals.h"
 #include "Game.h"
 #include "GameView.h"
-// #include "Map.h" ... if you decide to use the Map ADT
+#include "Map.h"
 
 struct gameView {
     //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
@@ -79,12 +80,45 @@ void getHistory(GameView currentView, PlayerID player,
 
 //// Functions that query the map to find information about connectivity
 
-// Returns an array of LocationIDs for all directly connected locations
+static void fillConnectedLocations(bool *results, LocationID from, bool road, int rail, bool sea) {
+    const MapEdge *edges = getEdgesOf(from);
+    for (size_t e = 0; edges[e].next != NOWHERE; ++e) {
+        if ((road && edges[e].method == ROAD) ||
+            (rail && edges[e].method == RAIL) ||
+            (sea && edges[e].method == BOAT)) {
+            results[edges[e].next] = true;
+        }
 
+        if (rail && edges[e].method == RAIL)
+            fillConnectedLocations(results, edges[e].next, false, rail - 1, false);
+    }
+}
+
+// Returns an array of LocationIDs for all directly connected locations
 LocationID *connectedLocations(GameView currentView, int *numLocations,
                                LocationID from, PlayerID player, Round round,
                                int road, int rail, int sea)
 {
-    //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-    return NULL;
+    (void)currentView; // Suppress compiler warnings
+
+    if (rail) {
+        if (player == PLAYER_DRACULA)
+            rail = 0;
+        else
+            rail = (player + round) % 4;
+    }
+
+    bool connectedLocations[NUM_MAP_LOCATIONS] = {false};
+    fillConnectedLocations(connectedLocations, from, road, rail, sea);
+
+    *numLocations = 0;
+    for (size_t l = 0; l < NUM_MAP_LOCATIONS; ++l)
+        *numLocations += connectedLocations[l];
+
+    LocationID *result = malloc(*numLocations * sizeof(LocationID));
+    for (size_t l = 0, r = 0; l < NUM_MAP_LOCATIONS; ++l)
+        if (connectedLocations[l])
+            result[r++] = l;
+
+    return result;
 }
