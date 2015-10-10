@@ -29,6 +29,16 @@ int main(int argc, char *argv[])
 	printf("Postfix: "); BSTreePostfix(T); printf("\n");
 	printf("ByLevel: "); BSTreeLevelOrder(T); printf("\n");
 
+	if (argc >= 2) {
+		FILE *out = fopen(argv[1], "w");
+		if (out) {
+			BSTreeDot(T, out);
+			fclose(out);
+		} else {
+			perror("fopen");
+		}
+	}
+
 	// Check correctness of tree
 
 	// assume no duplicates => each value produces a node

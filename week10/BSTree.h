@@ -3,6 +3,8 @@
 #ifndef BSTREE_H
 #define BSTREE_H
 
+#include <stdio.h>
+
 typedef struct BSTNode *BSTree;
 
 // create an empty BSTree
@@ -22,6 +24,8 @@ void BSTreePrefix(BSTree);
 void BSTreePostfix(BSTree);
 // print values in level-order
 void BSTreeLevelOrder(BSTree);
+// print values in dot format
+void BSTreeDot(BSTree, FILE*);
 
 // count #nodes in BSTree
 int BSTreeNumNodes(BSTree);

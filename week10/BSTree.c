@@ -1,7 +1,6 @@
 // BSTree.c ... implementation of binary search tree ADT
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <assert.h>
 #include <string.h>
 #include "BSTree.h"
@@ -96,6 +95,29 @@ void BSTreeLevelOrder(BSTree t)
 		QueueJoin(queue, node->right);
 	}
 	dropQueue(queue);
+}
+
+void BSTreeDot(BSTree t, FILE *out)
+{
+	fputs("digraph {\n", out);
+
+	Queue queue = newQueue();
+	QueueJoin(queue, t);
+	while (!QueueIsEmpty(queue)) {
+		BSTree node = QueueLeave(queue);
+
+		if (node->left) {
+			fprintf(out, "    \"%d\" -> \"%d\" [color = blue];\n", node->value, node->left->value);
+			QueueJoin(queue, node->left);
+		}
+		if (node->right) {
+			fprintf(out, "    \"%d\" -> \"%d\" [color = red];\n", node->value, node->right->value);
+			QueueJoin(queue, node->right);
+		}
+	}
+	dropQueue(queue);
+
+	fputs("}\n", out);
 }
 
 // count #nodes in BSTree
