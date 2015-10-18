@@ -7,17 +7,44 @@ Depth = depth of tree, Cost = average #comparisons per search
 Insert
 Method       Depth      Cost     Depth      Cost     Depth      Cost
 
-L         ________  ________  ________  ________  ________  ________
+L         ____5000  ____3114  ______13  ______12  ______28  ______16
 
-A         ________  ________  ________  ________  ________  ________
+A         ____5000  ____1887  ____2954  ____1115  ______28  ______16
 
-R         ________  ________  ________  ________  ________  ________
+R         ____2492  _____952  ____1774  _____674  ______27  ______15
 
-B         ________  ________  ________  ________  ________  ________
+B         _____204  ______62  ______20  ______14  ______23  ______13
 
-S         ________  ________  ________  ________  ________  ________
+S         _______*  ______24  _______*  ______23  _______*  ______23
 
-V         ________  ________  ________  ________  ________  ________
+V         ______13  ______12  ______14  ______12  ______15  ______12
 
+* = Varies
 
 Notes (what the above indicates):
+A high tree depth is correlated with a high average cost, which is expected due
+to the numbers of nodes trasversed is dependent on the tree depth.
+
+L: Standard insertion method. Proveably, ascending order creates a linked list
+(i.e., only one branch per node) hence high depth, while prefix order creates
+a perfectly balanced tree.
+
+A: Ascending creates a linked list again (equivilant to inserting decending at
+leaves). Messes up the nice property of prefix order so is no longer balanced.
+
+R: Since both L and A were bad for ascending order, and A was bad for prefix,
+the tree does not become very well balanced for either order.
+
+B: Rebalancing does not completely fix the linked-list-ness of ascending order,
+but does make it a lot better than before. Messes with prefix order a bit, but
+generally no significant effect on it.
+
+S: Depth changes as it is queried, tending towards a more balanced tree for
+random queries since most nodes would be queried for and hence moved to the top.
+
+V: Is self balancing, so tree depth is low all round. Does not beat L prefix
+order though, since AVL is not perfectly rebalancing.
+
+Random insertion order produces a generally balanced tree all round, since each
+piece of data is not correlated with each other and hence has a much lower
+chance of building a linked-list-like structure.
