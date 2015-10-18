@@ -1,13 +1,30 @@
 #!/bin/sh
 
-size=200
+if [ $# -eq 0 ]
+then
+	size=200
 
-for insert in L A B R S V
-do
-	for order in A
+	for insert in L A B R S V
 	do
-		echo ""
-		echo "Test: ./tlab $size $order $insert"
-		echo "t" | ./tlab $size $order $insert | grep -v Tree
+		for order in A
+		do
+			echo ""
+			echo "Test: ./tlab $size $order $insert"
+			echo "t" | ./tlab $size $order $insert | grep -v Tree
+		done
 	done
-done
+else
+	tempdir="$(mktemp -d)"
+	echo "Outputting to $tempdir"
+
+	for n in $(seq 10)
+	do
+		seed="$(< /dev/urandom grep -aoE '[0-9]+' | head -n50 | tr -d '\n' | grep -oE '[0-2][0-9]{0,9}' | head -n1)"
+		echo "Seed: $seed" > "$tempdir/$n"
+		for insert in L A B R S V
+		do
+			echo -n "$insert: "
+			echo "t" | ./tlab 5000 R $insert $seed | grep compares | tr ',' ' ' | cut -d' ' -f13 | tr '\n' ' ' | awk '{print $2 - $1}'
+		done >> "$tempdir/$n"
+	done
+fi
