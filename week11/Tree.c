@@ -411,6 +411,7 @@ Link rotateR(Link n1)
 {
 	if (n1 == NULL) return NULL;
 	Link n2 = n1->left;
+	++n1->within->nrotates;
 	if (n2 == NULL) return n1;
 	n1->left = n2->right;
 	n2->right = n1;
@@ -422,6 +423,7 @@ Link rotateL(Link n2)
 {
 	if (n2 == NULL) return NULL;
 	Link n1 = n2->right;
+	++n2->within->nrotates;
 	if (n1 == NULL) return n2;
 	n2->right = n1->left;
 	n1->left = n2;
