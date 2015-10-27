@@ -56,6 +56,7 @@ int main(int argc, char *argv[])
 		nwords++;
 		if (HashTableSearch(htab,word) != NULL)
 			nfound++;
+		dropItem(word);
 	}
 
 	// examine hash table

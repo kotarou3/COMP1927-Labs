@@ -52,6 +52,7 @@ void dropHashTable(HashTable ht)
 	int i;
     for (i = 0; i < ht->nslots; i++)
 		dropList(ht->lists[i]);
+	free(ht->lists);
 	free(ht);
 }
 

@@ -63,7 +63,7 @@ void ListInsert(List L, Item it)
 	assert(L != NULL);
 	ListNode *new = malloc(sizeof(ListNode));
 	assert(new != NULL);
-	new->value = it;
+	new->value = strdup(it);
 	new->next = NULL;
 	if (L->last == NULL)
 		L->first = L->last = new;
@@ -91,6 +91,7 @@ void ListDelete(List L, Key k)
 			L->first = curr->next;
 		else
 			prev->next = curr->next;
+		free(curr->value);
 		free(curr);
 		if (L->first == NULL)
 			L->last = NULL;
