@@ -61,11 +61,29 @@ void HashTableStats(HashTable ht)
 {
 	assert(ht != NULL);
 	printf("Hash Table Stats:\n");
-	printf("Number of slots = %d\n",0); // TODO
-	printf("Number of items = %d\n",0); // TODO
+	printf("Number of slots = %d\n", ht->nslots);
+	printf("Number of items = %d\n", ht->nitems);
 	printf("Chain length distribution\n");
-	printf("%8s %8s\n","Length","#Chains");
-	// TODO .. rest of function to show length/freq pairs
+	printf("%8s %8s\n", "Length", "#Chains");
+
+	size_t lengthChainsLength = 4;
+	size_t *lengthChains = calloc(lengthChainsLength, sizeof(size_t));
+	for (size_t l = 0; l < (size_t)ht->nslots; ++l) {
+		size_t chainLength = ListLength(ht->lists[l]);
+		if (chainLength >= lengthChainsLength) {
+			lengthChains = realloc(lengthChains, lengthChainsLength * 2 * sizeof(size_t));
+			memset(lengthChains + lengthChainsLength, 0, lengthChainsLength * sizeof(size_t));
+			lengthChainsLength *= 2;
+		}
+
+		++lengthChains[chainLength];
+	}
+
+	for (size_t l = 0; l < lengthChainsLength; ++l)
+		if (lengthChains[l] != 0)
+			printf("%8zu %8zu\n", l, lengthChains[l]);
+
+	free(lengthChains);
 }
 
 // insert a new value into a HashTable
