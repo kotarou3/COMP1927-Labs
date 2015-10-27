@@ -1,0 +1,58 @@
+a. The mkwords 1000000 command produces 857144 distinct words. What is the maximum chain length if a hash table size of 85711 is used? How does the chain length distribution change if the hash table size is 100000? 214283? 400000? 400837? 857144? 857137?
+
+857144 in the worst case.
+Length distribution bunches around (number of items)/(number of slots) with fairly long tails.
+
+b. Every other number above (i.e. 85711, 214283, 400837, 857137) is prime. It is often noted that using prime numbers appropriately in the hash function leads to a better distribution of hash values, and thus generally shorter chains. Does this appear to be the case for the hash table sizes in the previous question?
+
+Yes, but negligibly so.
+
+c. An "optimal" hash table would have all slots occupied and have all chains of length roughly (nwords/nslots). In practice, this is impossible to achieve in the general case, and what we want is a table with relatively short chains, with as few slots as possible (small size of hash table), and not too many empty slots. Can you find a suitable hash table size that keeps the maximum chain length under 10, and has most chains with length 1 or 2, but also uses more than 2/3 of the slots?
+
+750019
+
+d. Compare both the outputs and the profiles for the two commands:
+
+   $ ./words /home/cs1927/web/15s2/labs/week12/places 1048576
+   $ ./words /home/cs1927/web/15s2/labs/week12/places 1048573
+
+   What does this tell you about has table search performance when the hash function is significantly sub-optimal?
+
+A bad hashes that unevenly produces collisions will lead to a very wide range of chain lengths, producing higher access times on average.
+
+e. Examine the profiles from running the command:
+
+   $ ./mkwords 1000000 | ./words - N
+
+   for a number of different values of N. What are the most costly functions (in terms of overall time)?
+
+hash() and ListSearch(). Especially ListSearch() when load is high.
+
+f. Suggest how the individual functions might be improved. Suggest how the overall performance might be improved.
+
+Use a faster (and better) hashing function.
+Dynamically resize the table when load starts to get high and use linear probing.
+
+g. Implement your suggestions and then give a new profile to show the improvement, and explain how the profile shows the improvement.
+
+ListSearch() no longer used, with HashTableInsertSlot() and HashTableSlotSearch() taking its place.
+
+2000000 slots:
+    Overall runtime: 1s -> 0.7s (40% improvement)
+    hash(): 0.2s -> 0.06s (2x improvement)
+    ListSearch(): 0.1s -> 0.1s (No change)
+
+1000000 slots:
+    Overall runtime: 1s -> 0.7s (40% improvement)
+    hash(): 0.2s -> 0.06s (2x improvement)
+    ListSearch(): 0.1s -> 0.1s (No change)
+
+500000 slots:
+    Overall runtime: 1s -> 0.7s (40% improvement)
+    hash(): 0.2s -> 0.06s (2x improvement)
+    ListSearch(): 0.1s -> 0.1s (No change)
+
+5000 slots:
+    Overall runtime: 7s -> 0.7s (9x improvement)
+    hash(): 0.2s -> 0.06s (2x improvement)
+    ListSearch(): 3s -> 0.2s (14x improvement)

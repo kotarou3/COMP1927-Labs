@@ -1,6 +1,6 @@
 include ../Makefile.inc
 
-CFLAGS += -D_BSD_SOURCE -pg
+CFLAGS += -D_BSD_SOURCE -pg -msse4.2
 LDFLAGS += -pg
 
 all: words mkwords

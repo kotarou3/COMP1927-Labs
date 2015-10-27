@@ -1,31 +1,42 @@
 // HashTable.c ... implementation of HashTable ADT
 // Written by John Shepherd, May 2013
 
+#include <nmmintrin.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
 #include "HashTable.h"
-#include "List.h"
 
 // Types and functions local to HashTable ADT
 
+typedef struct HashTabSlot {
+	uint32_t crc; // for faster rehashing
+	Item item;
+} HashTabSlot;
+
 typedef struct HashTabRep {
-	List *lists;  // either use this
+	HashTabSlot *slots;  // either use this
 	int   nslots; // # elements in array
 	int   nitems; // # items stored in HashTable
 } HashTabRep;
 
-// convert key into index (from Sedgewick)
-unsigned int hash(Key k, int tableSize)
+static const Item HashTableDeletedSentinel = "0cc96b9f-ca19-4a9f-a568-be880e6d2414";
+
+static unsigned int crc32c(Key k)
 {
-	unsigned int h = 0;
-	int a = 31415, b = 27183;
-	for (; *k != '\0'; k++) {
-		a = a*b % (tableSize-1);
-		h = (a*h + *k) % tableSize;
-	}
-	return (h % tableSize);
+	const size_t length = strlen(k);
+	uint32_t crc = 0;
+	size_t c = 0;
+
+	// Lots of potentially unaligned reads, but good enough for short key sizes
+	for (; length - c >= sizeof(uint64_t); c += sizeof(uint64_t))
+		crc = _mm_crc32_u64(crc, *(uint64_t*)(k + c));
+	for (; c < length; ++c)
+		crc = _mm_crc32_u8(crc, k[c]);
+
+	return crc;
 }
 
 
@@ -36,11 +47,8 @@ HashTable newHashTable(int N)
 {
 	HashTabRep *new = malloc(sizeof(HashTabRep));
 	assert(new != NULL);
-	new->lists = malloc(N*sizeof(List));
-	assert(new->lists != NULL);
-	int i;
-	for (i = 0; i < N; i++)
-		new->lists[i] = newList();
+	new->slots = calloc(N, sizeof(HashTabSlot));
+	assert(new->slots != NULL);
 	new->nslots = N; new->nitems = 0;
 	return new;
 }
@@ -49,10 +57,10 @@ HashTable newHashTable(int N)
 void dropHashTable(HashTable ht)
 {
 	assert(ht != NULL);
-	int i;
-    for (i = 0; i < ht->nslots; i++)
-		dropList(ht->lists[i]);
-	free(ht->lists);
+	for (size_t i = 0; i < (size_t)ht->nslots; i++)
+		if (ht->slots[i].item && ht->slots[i].item != HashTableDeletedSentinel)
+			free(ht->slots[i].item);
+	free(ht->slots);
 	free(ht);
 }
 
@@ -69,11 +77,18 @@ void HashTableStats(HashTable ht)
 	size_t lengthChainsLength = 4;
 	size_t *lengthChains = calloc(lengthChainsLength, sizeof(size_t));
 	for (size_t l = 0; l < (size_t)ht->nslots; ++l) {
-		size_t chainLength = ListLength(ht->lists[l]);
+		size_t chainLength = 0;
+		if (ht->slots[l].item && ht->slots[l].item != HashTableDeletedSentinel)
+			chainLength = (l - ht->slots[l].crc % ht->nslots) % ht->nslots + 1;
+
 		if (chainLength >= lengthChainsLength) {
-			lengthChains = realloc(lengthChains, lengthChainsLength * 2 * sizeof(size_t));
-			memset(lengthChains + lengthChainsLength, 0, lengthChainsLength * sizeof(size_t));
-			lengthChainsLength *= 2;
+			size_t multiplier = 2;
+			while (lengthChainsLength * multiplier < chainLength)
+				multiplier += multiplier;
+
+			lengthChains = realloc(lengthChains, lengthChainsLength * multiplier * sizeof(size_t));
+			memset(lengthChains + lengthChainsLength, 0, lengthChainsLength * (multiplier - 1) * sizeof(size_t));
+			lengthChainsLength *= multiplier;
 		}
 
 		++lengthChains[chainLength];
@@ -86,29 +101,81 @@ void HashTableStats(HashTable ht)
 	free(lengthChains);
 }
 
+static void HashTableInsertSlot(HashTable ht, HashTabSlot slot)
+{
+	// Could insert duplicates, but won't affect integrity
+	size_t key = slot.crc % ht->nslots;
+	while (ht->slots[key].item && ht->slots[key].item != HashTableDeletedSentinel) {
+		if (!strcmp(ht->slots[key].item, slot.item)) {
+			free(slot.item);
+			return;
+		} else {
+			key = (key + 1) % ht->nslots;
+		}
+	}
+
+	ht->slots[key] = slot;
+	++ht->nitems;
+}
+
+static void HashTableRehash(HashTable ht, size_t newTableSize)
+{
+	assert(ht != NULL);
+	assert(newTableSize >= (size_t)ht->nitems);
+
+	size_t oldSlotsLength = ht->nslots;
+	HashTabSlot *oldSlots = ht->slots;
+
+	ht->nitems = 0;
+	ht->nslots = newTableSize;
+	ht->slots = calloc(newTableSize, sizeof(HashTabSlot));
+	assert(ht->slots != NULL);
+
+	for (size_t s = 0; s < oldSlotsLength; ++s)
+		if (oldSlots[s].item && oldSlots[s].item != HashTableDeletedSentinel)
+			HashTableInsertSlot(ht, oldSlots[s]);
+
+	free(oldSlots);
+}
+
 // insert a new value into a HashTable
 void HashTableInsert(HashTable ht, Item it)
 {
 	assert(ht != NULL);
-	int i = hash(key(it), ht->nslots);
-	if (ListSearch(ht->lists[i], key(it)) == NULL) {
-		ListInsert(ht->lists[i], it);
-		ht->nitems++;
-	}
+
+	if (ht->nitems >= ht->nslots * 2 / 3)
+		HashTableRehash(ht, ht->nslots * 2);
+
+	HashTableInsertSlot(ht, (HashTabSlot){.crc = crc32c(it), .item = strdup(it)});
+}
+
+static HashTabSlot *HashTableSlotSearch(HashTable ht, Key k)
+{
+	assert(ht != NULL);
+	for (size_t key = crc32c(k) % ht->nslots; ht->slots[key].item; key = (key + 1) % ht->nslots)
+		if (ht->slots[key].item != HashTableDeletedSentinel && !strcmp(ht->slots[key].item, k))
+			return &ht->slots[key];
+	return NULL;
 }
 
 // delete a value from a HashTable
 void HashTableDelete(HashTable ht, Key k)
 {
 	assert(ht != NULL);
-	int h = hash(k, ht->nslots);
-	ListDelete(ht->lists[h], k);
+
+	HashTabSlot *slot = HashTableSlotSearch(ht, k);
+	if (slot) {
+		free(slot->item);
+		slot->item = HashTableDeletedSentinel;
+	}
 }
 
 // get Item from HashTable using Key
 Item *HashTableSearch(HashTable ht, Key k)
 {
 	assert(ht != NULL);
-	int i = hash(k, ht->nslots);
-	return ListSearch(ht->lists[i], k);
+	HashTabSlot *slot = HashTableSlotSearch(ht, k);
+	if (slot)
+		return &slot->item;
+	return NULL;
 }
